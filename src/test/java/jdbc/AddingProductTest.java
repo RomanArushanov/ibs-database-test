@@ -13,7 +13,7 @@ public class AddingProductTest extends BaseTestJdbc {
     @Tag("DBT_1")
     @ParameterizedTest
     @MethodSource("testData")
-    public void test(int foodId, String foodName, String foodType, boolean foodExotic){
+    public void addingProductTest(int foodId, String foodName, String foodType, boolean foodExotic){
         Product newProduct = new Product(foodId, foodName, foodType, foodExotic);
 
         // проверяем, что записи нет в таблице
