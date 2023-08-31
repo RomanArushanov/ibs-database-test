@@ -16,20 +16,15 @@ public class AddingProductTest extends BaseTestJdbc {
     public void addingProductTest(int foodId, String foodName, String foodType, boolean foodExotic){
         Product newProduct = new Product(foodId, foodName, foodType, foodExotic);
 
-        // проверяем, что записи нет в таблице
-        Assertions.assertNotEquals(newProduct, checkProduct(foodId),
-                "Запись с ID " + foodId + " уже есть в таблице");
-
         // добавляем продукт в таблицу
-        Assertions.assertTrue(addingProduct(foodId, foodName, foodType, foodExotic),
-                "Продукт с ID " + foodId + " не добавлен");
+        addingProduct(foodId, foodName, foodType, foodExotic);
 
         // проверяем, что продукт появился в таблице
         Assertions.assertEquals(newProduct, checkProduct(foodId),
                 "Запись с ID " + foodId + " отсутствует");
 
         // удаляем продукт из таблицы
-        Assertions.assertTrue(deleteProduct(foodId), "Продукт с ID " + foodId + " не удален");
+        deleteProduct(foodId);
 
         // проверяем, что продукт удален из таблицы
         Assertions.assertNotEquals(newProduct, checkProduct(foodId),

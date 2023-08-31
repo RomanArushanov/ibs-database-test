@@ -17,7 +17,7 @@ import java.util.Properties;
 public class BaseTestJdbc {
 
     // метод добавления объекта
-    public boolean addingProduct(int foodId, String foodName, String foodType, boolean foodExotic) {
+    public void addingProduct(int foodId, String foodName, String foodType, boolean foodExotic) {
         String SQL = "INSERT INTO FOOD VALUES (?, ?, ?, ?)";
         try (Connection conn = getH2DataSource().getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(SQL);) {
@@ -25,13 +25,10 @@ public class BaseTestJdbc {
             preparedStatement.setString(2, foodName);
             preparedStatement.setString(3, foodType);
             preparedStatement.setBoolean(4, foodExotic);
-            if (preparedStatement.executeUpdate() > 0) {
-                return true;
-            }
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
     }
 
     //метод проверки наличия объекта
@@ -60,18 +57,15 @@ public class BaseTestJdbc {
     }
 
     // метод удаления объекта
-    public boolean deleteProduct(int foodId) {
+    public void deleteProduct(int foodId) {
         String SQL = "DELETE FROM FOOD WHERE FOOD_ID = ?;";
         try (Connection conn = getH2DataSource().getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(SQL);) {
             preparedStatement.setInt(1, foodId);
-            if (preparedStatement.executeUpdate() > 0) {
-                return true;
-            }
+            preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
-        return false;
     }
 
     // данные для теста

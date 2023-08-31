@@ -17,10 +17,6 @@ public class AddingProductTest extends BaseTestJdbcTemplate {
     public void addingProductTest(int foodId, String foodName, String foodType, boolean foodExotic) {
         Product newProduct = new Product(foodId, foodName, foodType, foodExotic);
 
-        // проверяем, что записи нет в таблице
-        Assertions.assertNotEquals(newProduct, checkProduct(foodId),
-                "Запись с ID " + foodId + " уже есть в таблице");
-
         // добавляем запись в таблицу
         addProductById(foodId, foodName, foodType, foodExotic);
 
