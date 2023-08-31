@@ -1,7 +1,7 @@
 package jdbc;
 
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.h2.jdbcx.JdbcDataSource;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import product.Product;
 
@@ -15,11 +15,37 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class BaseTestJdbc {
+    private static BasicDataSource dataSource = null;
+
+    // чтение проперти и создание соединения
+    @BeforeAll
+    private static void init() {
+        Properties dataBaseProperties = new Properties();
+
+        try {
+            InputStream resouerceAsStream = BaseTestJdbc.class.getClassLoader()
+                    .getResourceAsStream("database.properties");
+            if (resouerceAsStream != null) {
+                dataBaseProperties.load(resouerceAsStream);
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Не удалось загрузить файл database.properties", e);
+        }
+
+        dataSource = new BasicDataSource();
+        dataSource.setUrl(dataBaseProperties.getProperty("db.url"));
+        dataSource.setUsername(dataBaseProperties.getProperty("db.user"));
+        dataSource.setPassword(dataBaseProperties.getProperty("db.password"));
+
+        dataSource.setMinIdle(5);
+        dataSource.setMaxIdle(10);
+        dataSource.setMaxTotal(25);
+    }
 
     // метод добавления объекта
     public void addingProduct(int foodId, String foodName, String foodType, boolean foodExotic) {
         String SQL = "INSERT INTO FOOD VALUES (?, ?, ?, ?)";
-        try (Connection conn = getH2DataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(SQL);) {
             preparedStatement.setInt(1, foodId);
             preparedStatement.setString(2, foodName);
@@ -35,7 +61,7 @@ public class BaseTestJdbc {
     public Product checkProduct(int foodId) {
         Product product = new Product();
         String sql = "SELECT * FROM FOOD WHERE FOOD_ID = ?";
-        try (Connection conn = getH2DataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(sql);) {
             preparedStatement.setInt(1, foodId);
             ResultSet rs = preparedStatement.executeQuery();
@@ -59,7 +85,7 @@ public class BaseTestJdbc {
     // метод удаления объекта
     public void deleteProduct(int foodId) {
         String SQL = "DELETE FROM FOOD WHERE FOOD_ID = ?;";
-        try (Connection conn = getH2DataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(SQL);) {
             preparedStatement.setInt(1, foodId);
             preparedStatement.executeUpdate();
@@ -77,28 +103,5 @@ public class BaseTestJdbc {
                 {"99", "胡蘿蔔", "VEGETABLE", false},
                 {"101", "موز", "FRUIT", true}
         };
-    }
-
-
-    // чтение проперти и возвращение соединения
-    private DataSource getH2DataSource() {
-        Properties dataBaseProperties = new Properties();
-        JdbcDataSource dataSource = new JdbcDataSource();
-
-        try {
-            InputStream resouerceAsStream = BaseTestJdbc.class.getClassLoader()
-                    .getResourceAsStream("database.properties");
-            if (resouerceAsStream != null) {
-                dataBaseProperties.load(resouerceAsStream);
-            }
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Не удалось загрузить файл database.properties", e);
-        }
-
-        dataSource.setURL(dataBaseProperties.getProperty("db.url"));
-        dataSource.setUser(dataBaseProperties.getProperty("db.user"));
-        dataSource.setPassword(dataBaseProperties.getProperty("db.password"));
-
-        return dataSource;
     }
 }

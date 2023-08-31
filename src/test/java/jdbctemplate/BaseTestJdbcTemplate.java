@@ -1,6 +1,7 @@
 package jdbctemplate;
 
 import jdbc.BaseTestJdbc;
+import org.apache.commons.dbcp2.BasicDataSource;
 import product.Product;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,12 +14,34 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class BaseTestJdbcTemplate {
-    static JdbcTemplate jdbcTemplate;
+    private static JdbcTemplate jdbcTemplate;
+    private static BasicDataSource dataSource = null;
 
-    // установка коннекта
+    // чтение проперти и создание соединения
     @BeforeAll
-    static void init() {
-        jdbcTemplate = new JdbcTemplate(getH2DataSource());
+    private static void init() {
+        Properties dataBaseProperties = new Properties();
+
+        try {
+            InputStream resouerceAsStream = BaseTestJdbc.class.getClassLoader()
+                    .getResourceAsStream("database.properties");
+            if (resouerceAsStream != null) {
+                dataBaseProperties.load(resouerceAsStream);
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Не удалось загрузить файл database.properties", e);
+        }
+
+        dataSource = new BasicDataSource();
+        dataSource.setUrl(dataBaseProperties.getProperty("db.url"));
+        dataSource.setUsername(dataBaseProperties.getProperty("db.user"));
+        dataSource.setPassword(dataBaseProperties.getProperty("db.password"));
+
+        dataSource.setMinIdle(5);
+        dataSource.setMaxIdle(10);
+        dataSource.setMaxTotal(25);
+
+        jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     // создание данных для теста
@@ -62,27 +85,5 @@ public class BaseTestJdbcTemplate {
         jdbcTemplate.update(
                 "DELETE FROM FOOD WHERE FOOD_ID = ?;",
                 foodId);
-    }
-
-    // чтение проперти и возвращение соединения
-    private static DataSource getH2DataSource() {
-        Properties dataBaseProperties = new Properties();
-        JdbcDataSource dataSource = new JdbcDataSource();
-
-        try {
-            InputStream resourceAsStream = BaseTestJdbc.class.getClassLoader()
-                    .getResourceAsStream("database.properties");
-            if (resourceAsStream != null) {
-                dataBaseProperties.load(resourceAsStream);
-            }
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Не удалось загрузить файл database.properties", e);
-        }
-
-        dataSource.setURL(dataBaseProperties.getProperty("db.url"));
-        dataSource.setUser(dataBaseProperties.getProperty("db.user"));
-        dataSource.setPassword(dataBaseProperties.getProperty("db.password"));
-
-        return dataSource;
     }
 }
