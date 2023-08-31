@@ -22,7 +22,7 @@ public class AddingProductTest extends BaseTestJdbcTemplate {
                 "Запись с ID " + foodId + " уже есть в таблице");
 
         // добавляем запись в таблицу
-        updateProductById(foodId, foodName, foodType, foodExotic);
+        addProductById(foodId, foodName, foodType, foodExotic);
 
         // проверяем, что продукт появился в таблице
         Assertions.assertEquals(newProduct, checkProduct(foodId),

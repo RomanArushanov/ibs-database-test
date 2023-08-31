@@ -51,7 +51,7 @@ public class BaseTestJdbcTemplate {
     }
 
     // метод добавления объекта
-    public void updateProductById(int foodId, String foodName, String foodType, boolean foodExotic) {
+    public void addProductById(int foodId, String foodName, String foodType, boolean foodExotic) {
         jdbcTemplate.update(
                 "INSERT INTO FOOD VALUES (?, ?, ?, ?)",
                 foodId, foodName, foodType, foodExotic);
@@ -70,7 +70,8 @@ public class BaseTestJdbcTemplate {
         JdbcDataSource dataSource = new JdbcDataSource();
 
         try {
-            InputStream resourceAsStream = BaseTestJdbc.class.getClassLoader().getResourceAsStream("database.properties");
+            InputStream resourceAsStream = BaseTestJdbc.class.getClassLoader()
+                    .getResourceAsStream("database.properties");
             if (resourceAsStream != null) {
                 dataBaseProperties.load(resourceAsStream);
             }

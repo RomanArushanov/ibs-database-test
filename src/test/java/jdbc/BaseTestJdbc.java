@@ -3,7 +3,6 @@ package jdbc;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import product.Product;
 
 import javax.sql.DataSource;
@@ -16,25 +15,12 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class BaseTestJdbc {
-    static Connection connection;
-
-    // открытие коннекта
-    @BeforeAll
-    static void init() throws SQLException {
-        connection = getH2DataSource().getConnection();
-    }
-
-    // закрытие коннекта
-    @AfterAll
-    static void close() throws SQLException {
-        connection.close();
-    }
 
     // метод добавления объекта
-    @Test
     public boolean addingProduct(int foodId, String foodName, String foodType, boolean foodExotic) {
         String SQL = "INSERT INTO FOOD VALUES (?, ?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SQL);) {
+        try (Connection conn = getH2DataSource().getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(SQL);) {
             preparedStatement.setInt(1, foodId);
             preparedStatement.setString(2, foodName);
             preparedStatement.setString(3, foodType);
@@ -49,11 +35,11 @@ public class BaseTestJdbc {
     }
 
     //метод проверки наличия объекта
-    @Test
     public Product checkProduct(int foodId) {
         Product product = new Product();
         String sql = "SELECT * FROM FOOD WHERE FOOD_ID = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
+        try (Connection conn = getH2DataSource().getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql);) {
             preparedStatement.setInt(1, foodId);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
@@ -76,7 +62,8 @@ public class BaseTestJdbc {
     // метод удаления объекта
     public boolean deleteProduct(int foodId) {
         String SQL = "DELETE FROM FOOD WHERE FOOD_ID = ?;";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SQL);) {
+        try (Connection conn = getH2DataSource().getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(SQL);) {
             preparedStatement.setInt(1, foodId);
             if (preparedStatement.executeUpdate() > 0) {
                 return true;
@@ -100,12 +87,13 @@ public class BaseTestJdbc {
 
 
     // чтение проперти и возвращение соединения
-    private static DataSource getH2DataSource() {
+    private DataSource getH2DataSource() {
         Properties dataBaseProperties = new Properties();
         JdbcDataSource dataSource = new JdbcDataSource();
 
         try {
-            InputStream resouerceAsStream = BaseTestJdbc.class.getClassLoader().getResourceAsStream("database.properties");
+            InputStream resouerceAsStream = BaseTestJdbc.class.getClassLoader()
+                    .getResourceAsStream("database.properties");
             if (resouerceAsStream != null) {
                 dataBaseProperties.load(resouerceAsStream);
             }
